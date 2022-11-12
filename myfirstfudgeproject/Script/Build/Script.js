@@ -75,11 +75,42 @@ var Script;
 })(Script || (Script = {}));
 var Script;
 (function (Script) {
+    var test = Test;
+    async function getPosition() {
+        try {
+            return await holdConnection();
+        }
+        catch (error) {
+            if (error instanceof Error) {
+                console.log('error message: ', error.message);
+                return error.message;
+            }
+            else {
+                console.log('unexpected error: ', error);
+                return 'An unexpected error occurred';
+            }
+        }
+    }
+    Script.getPosition = getPosition;
+    //--------------------------------------------------------------//
+    async function holdConnection() {
+        const response = await test.fetching('http://192.168.2.211:90', {
+            method: 'GET',
+            headers: {
+                Accept: 'application/json',
+            },
+        });
+        return response;
+    }
+})(Script || (Script = {}));
+//import { getPosition } from './HTTPRequests';
+var Script;
+//import { getPosition } from './HTTPRequests';
+(function (Script) {
     var ƒ = FudgeCore;
     ƒ.Debug.info("Main Program Template running!");
     let viewport;
     let player;
-    let walls;
     document.addEventListener("interactiveViewportStarted", start);
     function start(_event) {
         viewport = _event.detail;
@@ -90,43 +121,34 @@ var Script;
         //viewport.camera.mtxPivot.translateY(2);
         let graph = viewport.getBranch();
         player = graph.getChildrenByName("Player")[0];
-        walls = graph.getChildrenByName("Walls")[0];
         ƒ.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, update);
         ƒ.Loop.start();
         // ƒ.Loop.start();  // start the game loop to continously draw the viewport, update the audiosystem and drive the physics i/a
     }
-    function update(_event) {
-        let positionPlayer = player.mtxLocal.translation;
+    async function update(_event) {
+        //let positionPlayer = player.mtxLocal.translation;
         let deltaTime = ƒ.Loop.timeFrameReal / 500;
-        if (checkCollision(positionPlayer)) {
-            if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_UP, ƒ.KEYBOARD_CODE.W]))
+        if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_UP, ƒ.KEYBOARD_CODE.W]))
+            player.mtxLocal.translateY(1 * deltaTime);
+        if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_DOWN, ƒ.KEYBOARD_CODE.S]))
+            player.mtxLocal.translateY(-1 * deltaTime);
+        if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_LEFT, ƒ.KEYBOARD_CODE.A]))
+            player.mtxLocal.translateX(-1 * deltaTime);
+        if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_RIGHT, ƒ.KEYBOARD_CODE.D]))
+            player.mtxLocal.translateX(1 * deltaTime);
+        /*
+            if(await getPosition() == 4 || await getPosition() == 5 || await getPosition() == 6)
                 player.mtxLocal.translateY(1 * deltaTime);
-            if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_DOWN, ƒ.KEYBOARD_CODE.S]))
+            if(await getPosition() == 8 || await getPosition() == 10 || await getPosition() == 9)
                 player.mtxLocal.translateY(-1 * deltaTime);
-            if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_LEFT, ƒ.KEYBOARD_CODE.A]))
+            if(await getPosition() == 1 || await getPosition() == 5 || await getPosition() == 9)
                 player.mtxLocal.translateX(-1 * deltaTime);
-            if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_RIGHT, ƒ.KEYBOARD_CODE.D]))
+            if(await getPosition() == 2 || await getPosition() == 10 || await getPosition() == 6)
                 player.mtxLocal.translateX(1 * deltaTime);
-        }
+        */
         // ƒ.Physics.simulate();  // if physics is included and used
         viewport.draw();
         ƒ.AudioManager.default.update();
     }
-    function checkCollision(_pos) {
-        let check = walls.getChild(_pos.y + 1)?.getChild(_pos.x + 1)?.getChild(0);
-        return (!check || check.name == "Wall");
-    }
-    class GameObject extends ƒ.Node {
-        constructor(_name, _size, _position) {
-            super(_name);
-            this.rect = new ƒ.Rectangle(_position.x, _position.y, _size.x, _size.y, ƒ.ORIGIN2D.CENTER);
-            this.addComponent(new ƒ.ComponentTransform(ƒ.Matrix4x4.TRANSLATION(_position.toVector3(0))));
-            let cmpQuad = new ƒ.ComponentMesh(GameObject.meshQuad);
-            this.addComponent(cmpQuad);
-            cmpQuad.mtxPivot.scale(_size.toVector3(0));
-        }
-    }
-    GameObject.meshQuad = new ƒ.MeshQuad();
-    Script.GameObject = GameObject;
 })(Script || (Script = {}));
 //# sourceMappingURL=Script.js.map

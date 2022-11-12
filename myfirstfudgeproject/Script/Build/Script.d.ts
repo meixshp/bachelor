@@ -17,10 +17,7 @@ declare namespace Script {
     }
 }
 declare namespace Script {
-    import ƒ = FudgeCore;
-    class GameObject extends ƒ.Node {
-        static readonly meshQuad: ƒ.MeshQuad;
-        rect: ƒ.Rectangle;
-        constructor(_name: string, _size: ƒ.Vector2, _position: ƒ.Vector2);
-    }
+    function getPosition(): Promise<any>;
+}
+declare namespace Script {
 }
