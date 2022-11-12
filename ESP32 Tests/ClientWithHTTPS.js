@@ -36,39 +36,64 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.testing = void 0;
-var ClientWithHTTPS_1 = require("./ClientWithHTTPS");
-/* FOR './ContantClient'
-export async function testing() {
-    while (true) {
-        let value: number = await getButton();
-        if (value == 1)
-            console.log("Button is pressed");
-        if (value == 0)
-            console.log("Nothing");
-    }
-} */
-// FOR './ClientWithHTTPS'
-function testing() {
+exports.getButton = void 0;
+var http = require("http");
+function getButton() {
+    return __awaiter(this, void 0, void 0, function () {
+        var error_1;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    _a.trys.push([0, 2, , 3]);
+                    return [4 /*yield*/, holdConnection()];
+                case 1: return [2 /*return*/, _a.sent()];
+                case 2:
+                    error_1 = _a.sent();
+                    if (error_1 instanceof Error) {
+                        console.log("error message: ", error_1.message);
+                        return [2 /*return*/, error_1.message];
+                    }
+                    else {
+                        console.log("unexpected error: ", error_1);
+                        return [2 /*return*/, "An unexpected error occurred"];
+                    }
+                    return [3 /*break*/, 3];
+                case 3: return [2 /*return*/];
+            }
+        });
+    });
+}
+exports.getButton = getButton;
+console.log(getButton());
+//--------------------------------------------------------------//
+function holdConnection() {
     return __awaiter(this, void 0, void 0, function () {
         var value;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    if (!true) return [3 /*break*/, 2];
-                    return [4 /*yield*/, (0, ClientWithHTTPS_1.getButton)()];
+                    value = 0;
+                    return [4 /*yield*/, new Promise(function (resolve) {
+                            http.get("http://192.168.2.211:80", function (res) {
+                                var data = [];
+                                res.on("data", function (chunk) {
+                                    data.push(chunk);
+                                });
+                                res.on("end", function () {
+                                    var parsed = JSON.parse(Buffer.concat(data).toString());
+                                    //console.log(parsed.buttonPressed);
+                                    value = parsed.buttonPressed;
+                                    //console.log("in http: " + value);
+                                    resolve(value);
+                                });
+                            }).on("error", function (err) {
+                                console.log("Error: ", err.message);
+                            });
+                        })];
                 case 1:
-                    value = _a.sent();
-                    console.log(value);
-                    if (value == 1)
-                        console.log("Button is pressed");
-                    if (value == 0)
-                        console.log("Nothing");
-                    return [3 /*break*/, 0];
-                case 2: return [2 /*return*/];
+                    _a.sent();
+                    return [2 /*return*/, value];
             }
         });
     });
 }
-exports.testing = testing;
-testing();

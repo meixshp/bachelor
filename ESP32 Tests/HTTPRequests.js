@@ -35,40 +35,67 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.testing = void 0;
-var ClientWithHTTPS_1 = require("./ClientWithHTTPS");
-/* FOR './ContantClient'
-export async function testing() {
-    while (true) {
-        let value: number = await getButton();
-        if (value == 1)
-            console.log("Button is pressed");
-        if (value == 0)
-            console.log("Nothing");
-    }
-} */
-// FOR './ClientWithHTTPS'
-function testing() {
+exports.getPosition = void 0;
+var node_fetch_1 = __importDefault(require("node-fetch"));
+function getPosition() {
     return __awaiter(this, void 0, void 0, function () {
-        var value;
+        var error_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    if (!true) return [3 /*break*/, 2];
-                    return [4 /*yield*/, (0, ClientWithHTTPS_1.getButton)()];
-                case 1:
-                    value = _a.sent();
-                    console.log(value);
-                    if (value == 1)
-                        console.log("Button is pressed");
-                    if (value == 0)
-                        console.log("Nothing");
-                    return [3 /*break*/, 0];
-                case 2: return [2 /*return*/];
+                    _a.trys.push([0, 2, , 3]);
+                    return [4 /*yield*/, holdConnection()];
+                case 1: 
+                //while (true) {
+                return [2 /*return*/, _a.sent()];
+                case 2:
+                    error_1 = _a.sent();
+                    if (error_1 instanceof Error) {
+                        console.log('error message: ', error_1.message);
+                        return [2 /*return*/, error_1.message];
+                    }
+                    else {
+                        console.log('unexpected error: ', error_1);
+                        return [2 /*return*/, 'An unexpected error occurred'];
+                    }
+                    return [3 /*break*/, 3];
+                case 3: return [2 /*return*/];
             }
         });
     });
 }
-exports.testing = testing;
-testing();
+exports.getPosition = getPosition;
+getPosition();
+//--------------------------------------------------------------//
+function holdConnection() {
+    return __awaiter(this, void 0, void 0, function () {
+        var response, result, stringified, parsed;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, (0, node_fetch_1.default)('http://192.168.2.209:90', {
+                        method: 'GET',
+                        headers: {
+                            Accept: 'application/json',
+                        },
+                    })];
+                case 1:
+                    response = _a.sent();
+                    if (!response.ok) {
+                        throw new Error("Error! status: ".concat(response.status));
+                    }
+                    return [4 /*yield*/, response.json()];
+                case 2:
+                    result = (_a.sent());
+                    stringified = JSON.stringify(result);
+                    parsed = JSON.parse(stringified);
+                    //console.log("value: ");
+                    //console.log(parsed.buttonPressed);
+                    return [2 /*return*/, parsed.value];
+            }
+        });
+    });
+}
