@@ -1,15 +1,18 @@
-//import { getPosition } from './HTTPRequests';
 namespace Script {
     import ƒ = FudgeCore;
+    
     ƒ.Debug.info("Main Program Template running!");
 
     let viewport: ƒ.Viewport;
     let player: ƒ.Node;
+    let joystickURL = "ws://192.168.2.209:1338/";
 
     document.addEventListener("interactiveViewportStarted", <EventListener>start);
+    
 
     function start(_event: CustomEvent): void {
         viewport = _event.detail;
+        connectToWS(joystickURL);
 
         console.log(viewport.camera);
         viewport.camera.mtxPivot.translateZ(30);
@@ -26,9 +29,11 @@ namespace Script {
     }
 
     async function update(_event: Event) {
+        doSend("getState");
+        let state = getState();
         //let positionPlayer = player.mtxLocal.translation;
         let deltaTime: number = ƒ.Loop.timeFrameReal / 500;
-
+/*
         if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_UP, ƒ.KEYBOARD_CODE.W]))
             player.mtxLocal.translateY(1 * deltaTime);
         if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_DOWN, ƒ.KEYBOARD_CODE.S]))
@@ -37,20 +42,21 @@ namespace Script {
             player.mtxLocal.translateX(-1 * deltaTime);
         if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_RIGHT, ƒ.KEYBOARD_CODE.D]))
             player.mtxLocal.translateX(1 * deltaTime);
-
-/*        
-    if(await getPosition() == 4 || await getPosition() == 5 || await getPosition() == 6)
-        player.mtxLocal.translateY(1 * deltaTime);
-    if(await getPosition() == 8 || await getPosition() == 10 || await getPosition() == 9)
-        player.mtxLocal.translateY(-1 * deltaTime);
-    if(await getPosition() == 1 || await getPosition() == 5 || await getPosition() == 9)
-        player.mtxLocal.translateX(-1 * deltaTime);
-    if(await getPosition() == 2 || await getPosition() == 10 || await getPosition() == 6)
-        player.mtxLocal.translateX(1 * deltaTime);
 */
+        
+    if(state == 4 || state == 5 || state == 6)
+        player.mtxLocal.translateY(1 * deltaTime);
+    if(state == 8 || state == 10 || state == 9)
+        player.mtxLocal.translateY(-1 * deltaTime);
+    if(state == 1 || state == 5 || state == 9)
+        player.mtxLocal.translateX(-1 * deltaTime);
+    if(state == 2 || state == 10 || state == 6)
+        player.mtxLocal.translateX(1 * deltaTime);
+
 
         // ƒ.Physics.simulate();  // if physics is included and used
         viewport.draw();
         ƒ.AudioManager.default.update();
     }
+
 }

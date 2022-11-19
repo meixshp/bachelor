@@ -75,7 +75,56 @@ var Script;
 })(Script || (Script = {}));
 var Script;
 (function (Script) {
-    var test = Test;
+    var ƒ = FudgeCore;
+    ƒ.Debug.info("Main Program Template running!");
+    let viewport;
+    let player;
+    let joystickURL = "ws://192.168.2.209:1338/";
+    document.addEventListener("interactiveViewportStarted", start);
+    function start(_event) {
+        viewport = _event.detail;
+        Script.connectToWS(joystickURL);
+        console.log(viewport.camera);
+        viewport.camera.mtxPivot.translateZ(30);
+        viewport.camera.mtxPivot.rotateY(180);
+        //viewport.camera.mtxPivot.translateX(-2);
+        //viewport.camera.mtxPivot.translateY(2);
+        let graph = viewport.getBranch();
+        player = graph.getChildrenByName("Player")[0];
+        ƒ.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, update);
+        ƒ.Loop.start();
+        // ƒ.Loop.start();  // start the game loop to continously draw the viewport, update the audiosystem and drive the physics i/a
+    }
+    async function update(_event) {
+        Script.doSend("getState");
+        let state = Script.getState();
+        //let positionPlayer = player.mtxLocal.translation;
+        let deltaTime = ƒ.Loop.timeFrameReal / 500;
+        /*
+                if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_UP, ƒ.KEYBOARD_CODE.W]))
+                    player.mtxLocal.translateY(1 * deltaTime);
+                if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_DOWN, ƒ.KEYBOARD_CODE.S]))
+                    player.mtxLocal.translateY(-1 * deltaTime);
+                if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_LEFT, ƒ.KEYBOARD_CODE.A]))
+                    player.mtxLocal.translateX(-1 * deltaTime);
+                if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_RIGHT, ƒ.KEYBOARD_CODE.D]))
+                    player.mtxLocal.translateX(1 * deltaTime);
+        */
+        if (state == 4 || state == 5 || state == 6)
+            player.mtxLocal.translateY(1 * deltaTime);
+        if (state == 8 || state == 10 || state == 9)
+            player.mtxLocal.translateY(-1 * deltaTime);
+        if (state == 1 || state == 5 || state == 9)
+            player.mtxLocal.translateX(-1 * deltaTime);
+        if (state == 2 || state == 10 || state == 6)
+            player.mtxLocal.translateX(1 * deltaTime);
+        // ƒ.Physics.simulate();  // if physics is included and used
+        viewport.draw();
+        ƒ.AudioManager.default.update();
+    }
+})(Script || (Script = {}));
+var Script;
+(function (Script) {
     async function getPosition() {
         try {
             return await holdConnection();
@@ -94,7 +143,7 @@ var Script;
     Script.getPosition = getPosition;
     //--------------------------------------------------------------//
     async function holdConnection() {
-        const response = await test.fetching('http://192.168.2.211:90', {
+        const response = await fetch('http://192.168.2.211:90', {
             method: 'GET',
             headers: {
                 Accept: 'application/json',
@@ -103,52 +152,66 @@ var Script;
         return response;
     }
 })(Script || (Script = {}));
-//import { getPosition } from './HTTPRequests';
 var Script;
-//import { getPosition } from './HTTPRequests';
 (function (Script) {
-    var ƒ = FudgeCore;
-    ƒ.Debug.info("Main Program Template running!");
-    let viewport;
-    let player;
-    document.addEventListener("interactiveViewportStarted", start);
-    function start(_event) {
-        viewport = _event.detail;
-        console.log(viewport.camera);
-        viewport.camera.mtxPivot.translateZ(30);
-        viewport.camera.mtxPivot.rotateY(180);
-        //viewport.camera.mtxPivot.translateX(-2);
-        //viewport.camera.mtxPivot.translateY(2);
-        let graph = viewport.getBranch();
-        player = graph.getChildrenByName("Player")[0];
-        ƒ.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, update);
-        ƒ.Loop.start();
-        // ƒ.Loop.start();  // start the game loop to continously draw the viewport, update the audiosystem and drive the physics i/a
+    let state = 0;
+    let url = "";
+    //let connected: boolean;
+    let websocket;
+    console.log("Trying to open a WebSocket connection...");
+    //connectToWS(url);
+    function connectToWS(_url) {
+        url = _url;
+        websocket = new WebSocket(_url);
+        websocket.onopen = function (evt) {
+            onOpen(evt);
+        };
+        websocket.onclose = function (evt) {
+            onClose(evt);
+        };
+        websocket.onmessage = function (evt) {
+            onMessage(evt);
+        };
+        websocket.onerror = function (evt) {
+            onError(evt);
+        };
     }
-    async function update(_event) {
-        //let positionPlayer = player.mtxLocal.translation;
-        let deltaTime = ƒ.Loop.timeFrameReal / 500;
-        if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_UP, ƒ.KEYBOARD_CODE.W]))
-            player.mtxLocal.translateY(1 * deltaTime);
-        if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_DOWN, ƒ.KEYBOARD_CODE.S]))
-            player.mtxLocal.translateY(-1 * deltaTime);
-        if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_LEFT, ƒ.KEYBOARD_CODE.A]))
-            player.mtxLocal.translateX(-1 * deltaTime);
-        if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_RIGHT, ƒ.KEYBOARD_CODE.D]))
-            player.mtxLocal.translateX(1 * deltaTime);
-        /*
-            if(await getPosition() == 4 || await getPosition() == 5 || await getPosition() == 6)
-                player.mtxLocal.translateY(1 * deltaTime);
-            if(await getPosition() == 8 || await getPosition() == 10 || await getPosition() == 9)
-                player.mtxLocal.translateY(-1 * deltaTime);
-            if(await getPosition() == 1 || await getPosition() == 5 || await getPosition() == 9)
-                player.mtxLocal.translateX(-1 * deltaTime);
-            if(await getPosition() == 2 || await getPosition() == 10 || await getPosition() == 6)
-                player.mtxLocal.translateX(1 * deltaTime);
-        */
-        // ƒ.Physics.simulate();  // if physics is included and used
-        viewport.draw();
-        ƒ.AudioManager.default.update();
+    Script.connectToWS = connectToWS;
+    function onOpen(event) {
+        console.log("Connected.");
+        //connected = true;
     }
+    function onClose(event) {
+        console.log("Disconnected.");
+        // connected = false;
+        setTimeout(function () {
+            connectToWS(url);
+        }, 2000);
+    }
+    function onMessage(event) {
+        //console.log("Received: " + event.data);
+        /*switch (event.data) {
+            case "0":
+                console.log(event.data);
+                break;
+            case "1":
+                console.log(event.data);
+                break;
+            default:
+                break;
+        }*/
+        state = event.data;
+    }
+    function onError(event) {
+        console.log("Error: " + event.data);
+    }
+    function doSend(_message) {
+        websocket.send(_message);
+    }
+    Script.doSend = doSend;
+    function getState() {
+        return state;
+    }
+    Script.getState = getState;
 })(Script || (Script = {}));
 //# sourceMappingURL=Script.js.map

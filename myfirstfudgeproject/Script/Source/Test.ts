@@ -1,5 +1,4 @@
 namespace Script {
-    import test = Test;
 
     export async function getPosition() {
 
@@ -19,7 +18,7 @@ namespace Script {
     //--------------------------------------------------------------//
 
     async function holdConnection() {
-        const response = await test.fetching('http://192.168.2.211:90', {
+        const response = await fetch('http://192.168.2.211:90', {
             method: 'GET',
             headers: {
             Accept: 'application/json',

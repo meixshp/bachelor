@@ -17,7 +17,12 @@ declare namespace Script {
     }
 }
 declare namespace Script {
-    function getPosition(): Promise<any>;
 }
 declare namespace Script {
+    function getPosition(): Promise<string | Response>;
+}
+declare namespace Script {
+    function connectToWS(_url: string): void;
+    function doSend(_message: string): void;
+    function getState(): number;
 }
