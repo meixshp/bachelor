@@ -1,0 +1,7 @@
+Sprites: 
+
+- Character
+- Grass
+- Wall
+- various Tombstones
+- Flower
