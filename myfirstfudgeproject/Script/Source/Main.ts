@@ -18,46 +18,52 @@ namespace Script {
     let cameraNode: ƒ.Node = new ƒ.Node("cameraNode");
     let cmpCamera = new ƒ.ComponentCamera();
     let interactiveObjects: ƒ.Node;
+    let grass: ƒ.Node;
+    let walls: ƒ.Node;
+    let tombstones: ƒ.Node;
+    let flowers: ƒ.Node;
 
     export let root: ƒ.Node = new ƒ.Node("Root");
 
     document.addEventListener("interactiveViewportStarted", <EventListener>(<unknown>start));
 
     async function start(_event: CustomEvent): Promise<void> {
-        //viewport = _event.detail;
+        // ---------- IF DEFAULT CAMERA 
+        viewport = _event.detail;
+        viewport.camera.mtxPivot.translateZ(42);
+        viewport.camera.mtxPivot.rotateY(180);
+        viewport.camera.mtxPivot.translateX(10);
+        viewport.camera.mtxPivot.translateY(5);
+        graph = viewport.getBranch();
 
-        connectedToWS = false; //connecting(joystickURL);
+        // ---------- IF CAMERA ON PLAYER
+        // graph = <ƒ.Graph>ƒ.Project.resources["Graph|2022-08-09T09:54:54.928Z|39207"];
+        // cmpCamera.mtxPivot.translation = new ƒ.Vector3(0, 0, 30);
+        // cmpCamera.mtxPivot.rotation = new ƒ.Vector3(0, 180, 0);
+        // cameraNode.addComponent(cmpCamera);
+        // cameraNode.addComponent(new ƒ.ComponentTransform());
+        // graph.addChild(cameraNode);
+
+        //let canvas: HTMLCanvasElement = document.querySelector("canvas");
+        //viewport = new ƒ.Viewport();
+        //viewport.initialize("Viewport", graph, cmpCamera, canvas);
+
+        connectedToWS = false; 
+        //connecting(joystickURL);
         //connectToWS(joystickURL);
-
-        //console.log(viewport.camera);
-        //viewport.camera.mtxPivot.translateZ(100);
-        //viewport.camera.mtxPivot.rotateY(180);
-        //viewport.camera.mtxPivot.translateX(-2);
-        //viewport.camera.mtxPivot.translateY(2);
-
-        //graph = viewport.getBranch();
-        graph = <ƒ.Graph>ƒ.Project.resources["Graph|2022-08-09T09:54:54.928Z|39207"];
         player = graph.getChildrenByName("Player")[0];
         //sprite = await createSprite();
         //player.addChild(sprite);
         //player.getComponent(ƒ.ComponentMaterial).activate(false);
-
-        cmpCamera.mtxPivot.translation = new ƒ.Vector3(0, 0, 30);
-        cmpCamera.mtxPivot.rotation = new ƒ.Vector3(0, 180, 0);
-        cameraNode.addComponent(cmpCamera);
-        cameraNode.addComponent(new ƒ.ComponentTransform());
-        graph.addChild(cameraNode);
-
-        let canvas: HTMLCanvasElement = document.querySelector("canvas");
-        viewport = new ƒ.Viewport();
-        viewport.initialize("Viewport", graph, cmpCamera, canvas);
+        await loadSprites();
+        handleSprites();
 
         ƒ.Loop.addEventListener(ƒ.EVENT.LOOP_FRAME, update);
         ƒ.Loop.start();
     }
 
     async function update(_event: Event) {
-        placeCameraOnChar();
+        //placeCameraOnChar();
         document.addEventListener("keydown", interactWithObject);
 
         let deltaTime: number = ƒ.Loop.timeFrameReal / 200;
@@ -116,20 +122,38 @@ namespace Script {
         return sprite;
     }
 
+    function handleSprites(): void {
+        grass = graph.getChildrenByName("Map")[0].getChild(0);
+        for (let block of grass.getChildren()) {
+            setSpriteGrass(block);
+        }
+
+        walls = graph.getChildrenByName("Map")[0].getChild(1);
+        for (let wall of walls.getChildren()) {
+            setSpriteWall(wall);
+        }
+
+        tombstones = graph.getChildrenByName("Obstacles")[0];
+        for (let stone of tombstones.getChildren()) {
+            setSpriteTombstone(stone);
+        }
+    
+    }
+
     function createBlock(): ƒ.Node {
         let newNode: ƒ.Node = new ƒ.Node("Flower");
 
-        let mesh: ƒ.MeshSphere = new ƒ.MeshSphere();
+        //let mesh: ƒ.MeshSphere = new ƒ.MeshSphere();
         let material: ƒ.Material = new ƒ.Material("MaterialFlower", ƒ.ShaderLit, new ƒ.CoatColored());
 
         let cmpTransfrom: ƒ.ComponentTransform = new ƒ.ComponentTransform();
-        let cmpMesh: ƒ.ComponentMesh = new ƒ.ComponentMesh(mesh);
+        //let cmpMesh: ƒ.ComponentMesh = new ƒ.ComponentMesh(mesh);
         let cmpMaterial: ƒ.ComponentMaterial = new ƒ.ComponentMaterial(material);
 
         cmpMaterial.clrPrimary = ƒ.Color.CSS("red");
 
         newNode.addComponent(cmpMaterial);
-        newNode.addComponent(cmpMesh);
+        //newNode.addComponent(cmpMesh);
         newNode.addComponent(cmpTransfrom);
 
         newNode.mtxLocal.translate(
@@ -184,6 +208,7 @@ namespace Script {
             if (placableObject) {
                 flower = createBlock();
                 interactiveObjects.addChild(flower);
+                setSpriteFlower(flower);
             }
         }
     }

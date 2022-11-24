@@ -24,11 +24,10 @@ declare namespace Script {
     import ƒAid = FudgeAid;
     let animations: ƒAid.SpriteSheetAnimations;
     function loadSprites(): Promise<void>;
-    function setSprite(_node: ƒ.Node): void;
-    function setSpritePaths(_node: ƒ.Node): void;
-    function setSpriteCat(_node: ƒ.Node): void;
-    function setSpriteCatThrow(_node: ƒ.Node): void;
-    function setSpriteCatWin(_node: ƒ.Node): void;
+    function setSpriteGrass(_node: ƒ.Node): void;
+    function setSpriteWall(_node: ƒ.Node): void;
+    function setSpriteTombstone(_node: ƒ.Node): void;
+    function setSpriteFlower(_node: ƒ.Node): void;
 }
 declare namespace Script {
     function getPosition(): Promise<string | Response>;
