@@ -1,28 +1,37 @@
 namespace Script {
     let state: number = 0;
     let url = "";
-    //let connected: boolean;
+    //let connectedtoWS: boolean = false;
     let websocket: WebSocket;
 
     console.log("Trying to open a WebSocket connection...");
     //connectToWS(url);
 
+    export function connecting(_url: string): boolean {
+        try {
+            connectToWS(_url);
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
     export function connectToWS(_url: string) {
         url = _url;
-        websocket = new WebSocket(_url);
+            websocket = new WebSocket(_url);
 
-        websocket.onopen = function (evt) {
-            onOpen(evt);
-        };
-        websocket.onclose = function (evt) {
-            onClose(evt);
-        };
-        websocket.onmessage = function (evt) {
-            onMessage(evt);
-        };
-        websocket.onerror = function (evt) {
-            onError(evt);
-        };
+            websocket.onopen = function (evt) {
+                onOpen(evt);
+            };
+            websocket.onclose = function (evt) {
+                onClose(evt);
+            };
+            websocket.onmessage = function (evt) {
+                onMessage(evt);
+            };
+            websocket.onerror = function (evt) {
+                onError(evt);
+            };
     }
 
     function onOpen(event: any) {
@@ -32,7 +41,7 @@ namespace Script {
 
     function onClose(event: any) {
         console.log("Disconnected.");
-       // connected = false;
+        // connected = false;
         setTimeout(function () {
             connectToWS(url);
         }, 2000);
