@@ -14,3 +14,20 @@ canvas.fullscreen {
   width: 100vw; 
   height: 100vh; 
 }
+
+#speechbox {
+    width: 900px;
+    height: 100px;
+    background-color: black;
+    border-style: solid;
+    border-color: white;
+    color: white;
+    padding: 20px;
+    visibility: hidden;
+    position: absolute;
+    bottom: 0;
+    left: calc(50% - 495px);
+    z-index: 999;
+    margin: 20px;
+
+}
