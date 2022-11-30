@@ -23,6 +23,7 @@ namespace Script {
     let walls: ƒ.Node;
     let tombstones: ƒ.Node;
     let flowers: ƒ.Node;
+    let pulse: number; 
 
     export let root: ƒ.Node = new ƒ.Node("Root");
 
@@ -77,6 +78,8 @@ namespace Script {
 
         let deltaTime: number = ƒ.Loop.timeFrameReal / 200;
         tempPosition = player.mtxLocal.translation;
+
+        //changeLightRadius();
 
         if (connectedToWS) {
             doSend("getState");
@@ -224,5 +227,17 @@ namespace Script {
                 setSpriteFlower(flower);
             }
         }
+    }
+
+    function changeLightRadius(): void {
+        let defaultZ: number = 6;
+
+        if (pulse <= 90) {
+            console.log("Big Radius");
+        }
+        else if  (pulse > 90) {
+            console.log("Small Radius");
+        } else
+            console.log("Default Radius");
     }
 }

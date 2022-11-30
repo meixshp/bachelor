@@ -97,6 +97,7 @@ var Script;
     let walls;
     let tombstones;
     let flowers;
+    let pulse;
     Script.root = new ƒ.Node("Root");
     document.addEventListener("interactiveViewportStarted", start);
     async function start(_event) {
@@ -139,6 +140,7 @@ var Script;
         document.addEventListener("keydown", interactWithObject);
         let deltaTime = ƒ.Loop.timeFrameReal / 200;
         tempPosition = player.mtxLocal.translation;
+        //changeLightRadius();
         if (connectedToWS) {
             Script.doSend("getState");
             let state = Script.getState();
@@ -256,6 +258,17 @@ var Script;
                 Script.setSpriteFlower(flower);
             }
         }
+    }
+    function changeLightRadius() {
+        let defaultZ = 6;
+        if (pulse <= 90) {
+            console.log("Big Radius");
+        }
+        else if (pulse > 90) {
+            console.log("Small Radius");
+        }
+        else
+            console.log("Default Radius");
     }
 })(Script || (Script = {}));
 var Script;
