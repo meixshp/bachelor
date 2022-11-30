@@ -6,6 +6,7 @@ namespace Script {
 
     let viewport: ƒ.Viewport;
     let player: ƒ.Node;
+    let lightRadius: ƒ.Node
     let avatar: ƒAid.NodeSprite;
     let joystickURL = "ws://192.168.2.209:1338/";
     let connectedToWS: boolean;
@@ -29,41 +30,49 @@ namespace Script {
 
     async function start(_event: CustomEvent): Promise<void> {
         // ---------- IF DEFAULT CAMERA 
-        viewport = _event.detail;
-        viewport.camera.mtxPivot.translateZ(42);
-        viewport.camera.mtxPivot.rotateY(180);
-        viewport.camera.mtxPivot.translateX(10);
-        viewport.camera.mtxPivot.translateY(5);
-        graph = viewport.getBranch();
+        // viewport = _event.detail;
+        // viewport.camera.mtxPivot.translateZ(42);
+        // viewport.camera.mtxPivot.rotateY(180);
+        // viewport.camera.mtxPivot.translateX(0);
+        // viewport.camera.mtxPivot.translateY(4);
+        // graph = viewport.getBranch();
 
         // ---------- IF CAMERA ON PLAYER
-        // graph = <ƒ.Graph>ƒ.Project.resources["Graph|2022-08-09T09:54:54.928Z|39207"];
-        // cmpCamera.mtxPivot.translation = new ƒ.Vector3(0, 0, 30);
-        // cmpCamera.mtxPivot.rotation = new ƒ.Vector3(0, 180, 0);
-        // cameraNode.addComponent(cmpCamera);
-        // cameraNode.addComponent(new ƒ.ComponentTransform());
-        // graph.addChild(cameraNode);
+        graph = <ƒ.Graph>ƒ.Project.resources["Graph|2022-08-09T09:54:54.928Z|39207"];
+        cmpCamera.mtxPivot.translation = new ƒ.Vector3(0, 0, 30);
+        cmpCamera.mtxPivot.rotation = new ƒ.Vector3(0, 180, 0);
+        cameraNode.addComponent(cmpCamera);
+        cameraNode.addComponent(new ƒ.ComponentTransform());
+        graph.addChild(cameraNode);
+        
 
-        //let canvas: HTMLCanvasElement = document.querySelector("canvas");
-        //viewport = new ƒ.Viewport();
-        //viewport.initialize("Viewport", graph, cmpCamera, canvas);
+        let canvas: HTMLCanvasElement = document.querySelector("canvas");
+        viewport = new ƒ.Viewport();
+        viewport.initialize("Viewport", graph, cmpCamera, canvas);
 
         connectedToWS = false; 
         //connecting(joystickURL);
         //connectToWS(joystickURL);
         player = graph.getChildrenByName("Player")[0];
+        lightRadius = player.getChildrenByName("Light")[0];
+        //lightRadius.getComponent(ƒ.ComponentMaterial).activate(false);
+        
         //sprite = await createSprite();
         //player.addChild(sprite);
         //player.getComponent(ƒ.ComponentMaterial).activate(false);
         await loadSprites();
-        handleSprites();
+        await addLightRadius(lightRadius);
+        await handleSprites();
+
+        //document.querySelector("#speechbox").setAttribute("style","visibility:visible");
+        //document.getElementById("speechbox").innerHTML = "Game over!";
 
         ƒ.Loop.addEventListener(ƒ.EVENT.LOOP_FRAME, update);
         ƒ.Loop.start();
     }
 
     async function update(_event: Event) {
-        //placeCameraOnChar();
+        placeCameraOnChar();
         document.addEventListener("keydown", interactWithObject);
 
         let deltaTime: number = ƒ.Loop.timeFrameReal / 200;
@@ -77,10 +86,16 @@ namespace Script {
             if (state == 1 || state == 5 || state == 9) player.mtxLocal.translateX(-1 * deltaTime);
             if (state == 2 || state == 10 || state == 6) player.mtxLocal.translateX(1 * deltaTime);
         } else {
-            if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_UP, ƒ.KEYBOARD_CODE.W]))
+            if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_UP, ƒ.KEYBOARD_CODE.W])) {
                 player.mtxLocal.translateY(1 * deltaTime);
-            if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_DOWN, ƒ.KEYBOARD_CODE.S]))
+                //lightRadius.mtxLocal.translateY(1 * deltaTime);
+            }
+                
+            if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_DOWN, ƒ.KEYBOARD_CODE.S])) {
                 player.mtxLocal.translateY(-1 * deltaTime);
+                //lightRadius.mtxLocal.translateY(-1 * deltaTime*200);
+            }
+                
             if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_LEFT, ƒ.KEYBOARD_CODE.A]))
                 player.mtxLocal.translateX(-1 * deltaTime);
             if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_RIGHT, ƒ.KEYBOARD_CODE.D]))
@@ -122,22 +137,20 @@ namespace Script {
         return sprite;
     }
 
-    function handleSprites(): void {
-        grass = graph.getChildrenByName("Map")[0].getChild(0);
-        for (let block of grass.getChildren()) {
-            setSpriteGrass(block);
-        }
+    async function handleSprites(): Promise<void> {
+        grass = graph.getChildrenByName("Map")[0].getChild(1);
+        await setGrassMaterial(grass);
+        //for (let block of grass.getChildren()) {
+        //    setSpriteGrass(block);
+        //}
 
-        walls = graph.getChildrenByName("Map")[0].getChild(1);
-        for (let wall of walls.getChildren()) {
-            setSpriteWall(wall);
-        }
+        walls = graph.getChildrenByName("Map")[0].getChild(0).getChild(11);
+        await setWallMaterial(walls);
 
         tombstones = graph.getChildrenByName("Obstacles")[0];
         for (let stone of tombstones.getChildren()) {
             setSpriteTombstone(stone);
         }
-    
     }
 
     function createBlock(): ƒ.Node {

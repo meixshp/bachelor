@@ -80,6 +80,7 @@ var Script;
     ƒ.Debug.info("Main Program Template running!");
     let viewport;
     let player;
+    let lightRadius;
     let avatar;
     let joystickURL = "ws://192.168.2.209:1338/";
     let connectedToWS;
@@ -100,36 +101,41 @@ var Script;
     document.addEventListener("interactiveViewportStarted", start);
     async function start(_event) {
         // ---------- IF DEFAULT CAMERA 
-        viewport = _event.detail;
-        viewport.camera.mtxPivot.translateZ(42);
-        viewport.camera.mtxPivot.rotateY(180);
-        viewport.camera.mtxPivot.translateX(10);
-        viewport.camera.mtxPivot.translateY(5);
-        graph = viewport.getBranch();
+        // viewport = _event.detail;
+        // viewport.camera.mtxPivot.translateZ(42);
+        // viewport.camera.mtxPivot.rotateY(180);
+        // viewport.camera.mtxPivot.translateX(0);
+        // viewport.camera.mtxPivot.translateY(4);
+        // graph = viewport.getBranch();
         // ---------- IF CAMERA ON PLAYER
-        // graph = <ƒ.Graph>ƒ.Project.resources["Graph|2022-08-09T09:54:54.928Z|39207"];
-        // cmpCamera.mtxPivot.translation = new ƒ.Vector3(0, 0, 30);
-        // cmpCamera.mtxPivot.rotation = new ƒ.Vector3(0, 180, 0);
-        // cameraNode.addComponent(cmpCamera);
-        // cameraNode.addComponent(new ƒ.ComponentTransform());
-        // graph.addChild(cameraNode);
-        //let canvas: HTMLCanvasElement = document.querySelector("canvas");
-        //viewport = new ƒ.Viewport();
-        //viewport.initialize("Viewport", graph, cmpCamera, canvas);
+        graph = ƒ.Project.resources["Graph|2022-08-09T09:54:54.928Z|39207"];
+        cmpCamera.mtxPivot.translation = new ƒ.Vector3(0, 0, 30);
+        cmpCamera.mtxPivot.rotation = new ƒ.Vector3(0, 180, 0);
+        cameraNode.addComponent(cmpCamera);
+        cameraNode.addComponent(new ƒ.ComponentTransform());
+        graph.addChild(cameraNode);
+        let canvas = document.querySelector("canvas");
+        viewport = new ƒ.Viewport();
+        viewport.initialize("Viewport", graph, cmpCamera, canvas);
         connectedToWS = false;
         //connecting(joystickURL);
         //connectToWS(joystickURL);
         player = graph.getChildrenByName("Player")[0];
+        lightRadius = player.getChildrenByName("Light")[0];
+        //lightRadius.getComponent(ƒ.ComponentMaterial).activate(false);
         //sprite = await createSprite();
         //player.addChild(sprite);
         //player.getComponent(ƒ.ComponentMaterial).activate(false);
         await Script.loadSprites();
-        handleSprites();
+        await Script.addLightRadius(lightRadius);
+        await handleSprites();
+        //document.querySelector("#speechbox").setAttribute("style","visibility:visible");
+        //document.getElementById("speechbox").innerHTML = "Game over!";
         ƒ.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, update);
         ƒ.Loop.start();
     }
     async function update(_event) {
-        //placeCameraOnChar();
+        placeCameraOnChar();
         document.addEventListener("keydown", interactWithObject);
         let deltaTime = ƒ.Loop.timeFrameReal / 200;
         tempPosition = player.mtxLocal.translation;
@@ -146,10 +152,14 @@ var Script;
                 player.mtxLocal.translateX(1 * deltaTime);
         }
         else {
-            if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_UP, ƒ.KEYBOARD_CODE.W]))
+            if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_UP, ƒ.KEYBOARD_CODE.W])) {
                 player.mtxLocal.translateY(1 * deltaTime);
-            if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_DOWN, ƒ.KEYBOARD_CODE.S]))
+                //lightRadius.mtxLocal.translateY(1 * deltaTime);
+            }
+            if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_DOWN, ƒ.KEYBOARD_CODE.S])) {
                 player.mtxLocal.translateY(-1 * deltaTime);
+                //lightRadius.mtxLocal.translateY(-1 * deltaTime*200);
+            }
             if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_LEFT, ƒ.KEYBOARD_CODE.A]))
                 player.mtxLocal.translateX(-1 * deltaTime);
             if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ARROW_RIGHT, ƒ.KEYBOARD_CODE.D]))
@@ -178,15 +188,14 @@ var Script;
         sprite.getComponent(ƒ.ComponentMaterial).clrPrimary.a = 0.5;
         return sprite;
     }
-    function handleSprites() {
-        grass = graph.getChildrenByName("Map")[0].getChild(0);
-        for (let block of grass.getChildren()) {
-            Script.setSpriteGrass(block);
-        }
-        walls = graph.getChildrenByName("Map")[0].getChild(1);
-        for (let wall of walls.getChildren()) {
-            Script.setSpriteWall(wall);
-        }
+    async function handleSprites() {
+        grass = graph.getChildrenByName("Map")[0].getChild(1);
+        await Script.setGrassMaterial(grass);
+        //for (let block of grass.getChildren()) {
+        //    setSpriteGrass(block);
+        //}
+        walls = graph.getChildrenByName("Map")[0].getChild(0).getChild(11);
+        await Script.setWallMaterial(walls);
         tombstones = graph.getChildrenByName("Obstacles")[0];
         for (let stone of tombstones.getChildren()) {
             Script.setSpriteTombstone(stone);
@@ -253,10 +262,10 @@ var Script;
 (function (Script) {
     var ƒAid = FudgeAid;
     Script.animations = {};
-    let spriteGrass;
-    let spriteWall;
     let spriteTombstone;
     let spriteFlower;
+    let spriteLight;
+    let material;
     async function loadSprites() {
         let imgSpriteSheetGrass = new ƒ.TextureImage();
         await imgSpriteSheetGrass.load("Images/GRASS+.png");
@@ -264,6 +273,9 @@ var Script;
         let imgSpriteSheetWall = new ƒ.TextureImage();
         await imgSpriteSheetWall.load("Images/wall3.png");
         let spriteSheetWall = new ƒ.CoatTextured(undefined, imgSpriteSheetWall);
+        // let imgSpriteSheetLight: ƒ.TextureImage = new ƒ.TextureImage();
+        // await imgSpriteSheetLight.load("Images/light_radius.png");
+        // let spriteSheetLight: ƒ.CoatTextured = new ƒ.CoatTextured(undefined, imgSpriteSheetLight);
         generateSprites(spriteSheet, spriteSheetWall);
     }
     Script.loadSprites = loadSprites;
@@ -280,33 +292,37 @@ var Script;
         // Flower ------------------------
         const wall = new ƒAid.SpriteSheetAnimation("wall", _spritesheetWall);
         wall.generateByGrid(ƒ.Rectangle.GET(0, 0, 250, 250), 1, 250, ƒ.ORIGIN2D.CENTER, ƒ.Vector2.X(250));
+        // Light ------------------------
+        // const light: ƒAid.SpriteSheetAnimation = new ƒAid.SpriteSheetAnimation("light", _spritesheetLight);
+        // light.generateByGrid(ƒ.Rectangle.GET(0, 0, 3508, 2480), 1, 2480, ƒ.ORIGIN2D.CENTER, ƒ.Vector2.X(3508));
         Script.animations["grass"] = grass;
         Script.animations["wall"] = wall;
         Script.animations["tombstone"] = stone;
         Script.animations["flower"] = flower;
+        // animations["light"] = light;
     }
-    function setSpriteGrass(_node) {
-        spriteGrass = new ƒAid.NodeSprite("SpriteGrass");
-        spriteGrass.addComponent(new ƒ.ComponentTransform(new ƒ.Matrix4x4()));
-        spriteGrass.setAnimation(Script.animations["grass"]);
-        spriteGrass.setFrameDirection(1);
-        spriteGrass.mtxLocal.translateZ(0.0001);
-        spriteGrass.framerate = 1;
-        _node.addChild(spriteGrass);
-        //_node.getComponent(ƒ.ComponentMaterial).clrPrimary = new ƒ.Color(0, 0, 0, 0);
+    async function setGrassMaterial(_node) {
+        let textureImage = new ƒ.TextureImage();
+        await textureImage.load("../Images/grass.png");
+        let coatSprite = new ƒ.CoatTextured(undefined, textureImage);
+        material = new ƒ.Material("grass", ƒ.ShaderLitTextured, coatSprite);
+        //material = new ƒ.Material("grass", ƒ.ShaderLit, new ƒ.CoatColored(new ƒ.Color(1, 0, 1, 1)));
+        let cmpMaterial = new ƒ.ComponentMaterial(material);
+        _node.addComponent(cmpMaterial);
+        cmpMaterial.mtxPivot.scale(new ƒ.Vector2(12, 9));
     }
-    Script.setSpriteGrass = setSpriteGrass;
-    function setSpriteWall(_node) {
-        spriteWall = new ƒAid.NodeSprite("SpriteWall");
-        spriteWall.addComponent(new ƒ.ComponentTransform(new ƒ.Matrix4x4()));
-        spriteWall.setAnimation(Script.animations["wall"]);
-        spriteWall.setFrameDirection(1);
-        spriteWall.mtxLocal.translateZ(0.0001);
-        spriteWall.framerate = 1;
-        _node.addChild(spriteWall);
-        //_node.getComponent(ƒ.ComponentMaterial).clrPrimary = new ƒ.Color(0, 0, 0, 0);
+    Script.setGrassMaterial = setGrassMaterial;
+    async function setWallMaterial(_node) {
+        let textureImage = new ƒ.TextureImage();
+        await textureImage.load("../Images/wall3.png");
+        let coatSprite = new ƒ.CoatTextured(undefined, textureImage);
+        material = new ƒ.Material("wall", ƒ.ShaderLitTextured, coatSprite);
+        //material = new ƒ.Material("grass", ƒ.ShaderLit, new ƒ.CoatColored(new ƒ.Color(1, 0, 1, 1)));
+        let cmpMaterial = new ƒ.ComponentMaterial(material);
+        _node.addComponent(cmpMaterial);
+        cmpMaterial.mtxPivot.scale(new ƒ.Vector2(12, 1));
     }
-    Script.setSpriteWall = setSpriteWall;
+    Script.setWallMaterial = setWallMaterial;
     function setSpriteTombstone(_node) {
         spriteTombstone = new ƒAid.NodeSprite("SpriteWall");
         spriteTombstone.addComponent(new ƒ.ComponentTransform(new ƒ.Matrix4x4()));
@@ -329,6 +345,24 @@ var Script;
         //_node.getComponent(ƒ.ComponentMaterial).clrPrimary = new ƒ.Color(0, 0, 0, 0);
     }
     Script.setSpriteFlower = setSpriteFlower;
+    async function addLightRadius(_node) {
+        let textureImage = new ƒ.TextureImage();
+        await textureImage.load("../Images/lightradius.png");
+        let coatSprite = new ƒ.CoatTextured(undefined, textureImage);
+        material = new ƒ.Material("Light", ƒ.ShaderLitTextured, coatSprite);
+        //material = new ƒ.Material("grass", ƒ.ShaderLit, new ƒ.CoatColored(new ƒ.Color(1, 0, 1, 1)));
+        let cmpMaterial = new ƒ.ComponentMaterial(material);
+        _node.addComponent(cmpMaterial);
+        cmpMaterial.mtxPivot.scale(new ƒ.Vector2(1, 1));
+        // spriteLight = new ƒAid.NodeSprite("SpriteLight");
+        // spriteLight.addComponent(new ƒ.ComponentTransform(new ƒ.Matrix4x4()));
+        // spriteLight.setAnimation(<ƒAid.SpriteSheetAnimation>animations["light"]);
+        // spriteLight.setFrameDirection(1);
+        // spriteLight.mtxLocal.translateZ(0.0001);
+        // spriteLight.framerate = 1;
+        // _node.addChild(spriteLight);
+    }
+    Script.addLightRadius = addLightRadius;
 })(Script || (Script = {}));
 var Script;
 (function (Script) {

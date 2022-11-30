@@ -2,10 +2,10 @@ namespace Script {
     import ƒAid = FudgeAid;
 
     export let animations: ƒAid.SpriteSheetAnimations = {};
-    let spriteGrass: ƒAid.NodeSprite;
-    let spriteWall: ƒAid.NodeSprite;
     let spriteTombstone: ƒAid.NodeSprite;
     let spriteFlower: ƒAid.NodeSprite;
+    let spriteLight: ƒAid.NodeSprite;
+    let material: ƒ.Material;
 
     export async function loadSprites(): Promise<void> {
         let imgSpriteSheetGrass: ƒ.TextureImage = new ƒ.TextureImage();
@@ -15,6 +15,10 @@ namespace Script {
         let imgSpriteSheetWall: ƒ.TextureImage = new ƒ.TextureImage();
         await imgSpriteSheetWall.load("Images/wall3.png");
         let spriteSheetWall: ƒ.CoatTextured = new ƒ.CoatTextured(undefined, imgSpriteSheetWall);
+
+        // let imgSpriteSheetLight: ƒ.TextureImage = new ƒ.TextureImage();
+        // await imgSpriteSheetLight.load("Images/light_radius.png");
+        // let spriteSheetLight: ƒ.CoatTextured = new ƒ.CoatTextured(undefined, imgSpriteSheetLight);
 
         generateSprites(spriteSheet, spriteSheetWall);
     }
@@ -37,34 +41,37 @@ namespace Script {
         const wall: ƒAid.SpriteSheetAnimation = new ƒAid.SpriteSheetAnimation("wall", _spritesheetWall);
         wall.generateByGrid(ƒ.Rectangle.GET(0, 0, 250, 250), 1, 250, ƒ.ORIGIN2D.CENTER, ƒ.Vector2.X(250));
 
+        // Light ------------------------
+        // const light: ƒAid.SpriteSheetAnimation = new ƒAid.SpriteSheetAnimation("light", _spritesheetLight);
+        // light.generateByGrid(ƒ.Rectangle.GET(0, 0, 3508, 2480), 1, 2480, ƒ.ORIGIN2D.CENTER, ƒ.Vector2.X(3508));
+
         animations["grass"] = grass;
         animations["wall"] = wall;
         animations["tombstone"] = stone;
         animations["flower"] = flower;
+        // animations["light"] = light;
     }
 
-    export function setSpriteGrass(_node: ƒ.Node): void {
-        spriteGrass = new ƒAid.NodeSprite("SpriteGrass");
-        spriteGrass.addComponent(new ƒ.ComponentTransform(new ƒ.Matrix4x4()));
-        spriteGrass.setAnimation(<ƒAid.SpriteSheetAnimation>animations["grass"]);
-        spriteGrass.setFrameDirection(1);
-        spriteGrass.mtxLocal.translateZ(0.0001);
-        spriteGrass.framerate = 1;
-
-        _node.addChild(spriteGrass);
-        //_node.getComponent(ƒ.ComponentMaterial).clrPrimary = new ƒ.Color(0, 0, 0, 0);
+    export async function setGrassMaterial(_node: ƒ.Node): Promise<void> {
+        let textureImage: ƒ.TextureImage = new ƒ.TextureImage();
+        await textureImage.load("../Images/grass.png");
+        let coatSprite: ƒ.CoatTextured = new ƒ.CoatTextured(undefined, textureImage);
+        material = new ƒ.Material("grass", ƒ.ShaderLitTextured, coatSprite);
+        //material = new ƒ.Material("grass", ƒ.ShaderLit, new ƒ.CoatColored(new ƒ.Color(1, 0, 1, 1)));
+        let cmpMaterial: ƒ.ComponentMaterial = new ƒ.ComponentMaterial(material);
+        _node.addComponent(cmpMaterial);
+        cmpMaterial.mtxPivot.scale(new ƒ.Vector2(12, 9))
     }
 
-    export function setSpriteWall(_node: ƒ.Node): void {
-        spriteWall = new ƒAid.NodeSprite("SpriteWall");
-        spriteWall.addComponent(new ƒ.ComponentTransform(new ƒ.Matrix4x4()));
-        spriteWall.setAnimation(<ƒAid.SpriteSheetAnimation>animations["wall"]);
-        spriteWall.setFrameDirection(1);
-        spriteWall.mtxLocal.translateZ(0.0001);
-        spriteWall.framerate = 1;
-
-        _node.addChild(spriteWall);
-        //_node.getComponent(ƒ.ComponentMaterial).clrPrimary = new ƒ.Color(0, 0, 0, 0);
+    export async function setWallMaterial(_node: ƒ.Node): Promise<void> {
+        let textureImage: ƒ.TextureImage = new ƒ.TextureImage();
+        await textureImage.load("../Images/wall3.png");
+        let coatSprite: ƒ.CoatTextured = new ƒ.CoatTextured(undefined, textureImage);
+        material = new ƒ.Material("wall", ƒ.ShaderLitTextured, coatSprite);
+        //material = new ƒ.Material("grass", ƒ.ShaderLit, new ƒ.CoatColored(new ƒ.Color(1, 0, 1, 1)));
+        let cmpMaterial: ƒ.ComponentMaterial = new ƒ.ComponentMaterial(material);
+        _node.addComponent(cmpMaterial);
+        cmpMaterial.mtxPivot.scale(new ƒ.Vector2(12, 1))
     }
 
     export function setSpriteTombstone(_node: ƒ.Node): void {
@@ -89,5 +96,25 @@ namespace Script {
 
         _node.addChild(spriteFlower);
         //_node.getComponent(ƒ.ComponentMaterial).clrPrimary = new ƒ.Color(0, 0, 0, 0);
+    }
+
+    export async function addLightRadius(_node: ƒ.Node): Promise<void> {
+        let textureImage: ƒ.TextureImage = new ƒ.TextureImage();
+        await textureImage.load("../Images/lightradius.png");
+        let coatSprite: ƒ.CoatTextured = new ƒ.CoatTextured(undefined, textureImage);
+        material = new ƒ.Material("Light", ƒ.ShaderLitTextured, coatSprite);
+        //material = new ƒ.Material("grass", ƒ.ShaderLit, new ƒ.CoatColored(new ƒ.Color(1, 0, 1, 1)));
+        let cmpMaterial: ƒ.ComponentMaterial = new ƒ.ComponentMaterial(material);
+        _node.addComponent(cmpMaterial);
+        cmpMaterial.mtxPivot.scale(new ƒ.Vector2(1, 1))
+
+        // spriteLight = new ƒAid.NodeSprite("SpriteLight");
+        // spriteLight.addComponent(new ƒ.ComponentTransform(new ƒ.Matrix4x4()));
+        // spriteLight.setAnimation(<ƒAid.SpriteSheetAnimation>animations["light"]);
+        // spriteLight.setFrameDirection(1);
+        // spriteLight.mtxLocal.translateZ(0.0001);
+        // spriteLight.framerate = 1;
+
+        // _node.addChild(spriteLight);
     }
 }
