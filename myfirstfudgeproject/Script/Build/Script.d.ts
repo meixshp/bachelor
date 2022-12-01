@@ -31,11 +31,22 @@ declare namespace Script {
     function addLightRadius(_node: ƒ.Node): Promise<void>;
 }
 declare namespace Script {
-    function getPosition(): Promise<string | Response>;
+    function getPosition(): Promise<any>;
 }
 declare namespace Script {
-    function connecting(_url: string): boolean;
-    function connectToWS(_url: string): void;
-    function doSend(_message: string): void;
-    function getState(): number;
+    class WebSocketClient {
+        state: number;
+        websocket: WebSocket;
+        url: string;
+        connected: boolean;
+        constructor(_url: string);
+        connecting(): boolean;
+        connectToWS(_url: string): void;
+        onOpen(event: any): void;
+        onClose(event: any): void;
+        onMessage(event: any): void;
+        onError(event: any): void;
+        doSend(_message: string): void;
+        getState(): number;
+    }
 }

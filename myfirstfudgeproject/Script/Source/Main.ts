@@ -24,6 +24,7 @@ namespace Script {
     let tombstones: ƒ.Node;
     let flowers: ƒ.Node;
     let pulse: number; 
+    let joystick: WebSocketClient;
 
     export let root: ƒ.Node = new ƒ.Node("Root");
 
@@ -45,13 +46,15 @@ namespace Script {
         cameraNode.addComponent(cmpCamera);
         cameraNode.addComponent(new ƒ.ComponentTransform());
         graph.addChild(cameraNode);
-        
 
         let canvas: HTMLCanvasElement = document.querySelector("canvas");
         viewport = new ƒ.Viewport();
         viewport.initialize("Viewport", graph, cmpCamera, canvas);
 
-        connectedToWS = false; 
+        joystick = new WebSocketClient(joystickURL);
+        joystick.connecting();
+
+        connectedToWS = joystick.connected; 
         //connecting(joystickURL);
         //connectToWS(joystickURL);
         player = graph.getChildrenByName("Player")[0];
@@ -78,12 +81,13 @@ namespace Script {
 
         let deltaTime: number = ƒ.Loop.timeFrameReal / 200;
         tempPosition = player.mtxLocal.translation;
-
+        //console.log(await getPosition());
         //changeLightRadius();
 
-        if (connectedToWS) {
-            doSend("getState");
-            let state = getState();
+        if (joystick.connected) {
+            joystick.doSend("getState");
+            let state = joystick.getState(); //await getPosition();
+
             if (state == 4 || state == 5 || state == 6) player.mtxLocal.translateY(1 * deltaTime);
             if (state == 8 || state == 10 || state == 9) player.mtxLocal.translateY(-1 * deltaTime);
             if (state == 1 || state == 5 || state == 9) player.mtxLocal.translateX(-1 * deltaTime);

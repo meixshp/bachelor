@@ -98,6 +98,7 @@ var Script;
     let tombstones;
     let flowers;
     let pulse;
+    let joystick;
     Script.root = new ƒ.Node("Root");
     document.addEventListener("interactiveViewportStarted", start);
     async function start(_event) {
@@ -118,7 +119,9 @@ var Script;
         let canvas = document.querySelector("canvas");
         viewport = new ƒ.Viewport();
         viewport.initialize("Viewport", graph, cmpCamera, canvas);
-        connectedToWS = false;
+        joystick = new Script.WebSocketClient(joystickURL);
+        joystick.connecting();
+        connectedToWS = joystick.connected;
         //connecting(joystickURL);
         //connectToWS(joystickURL);
         player = graph.getChildrenByName("Player")[0];
@@ -140,10 +143,11 @@ var Script;
         document.addEventListener("keydown", interactWithObject);
         let deltaTime = ƒ.Loop.timeFrameReal / 200;
         tempPosition = player.mtxLocal.translation;
+        //console.log(await getPosition());
         //changeLightRadius();
-        if (connectedToWS) {
-            Script.doSend("getState");
-            let state = Script.getState();
+        if (joystick.connected) {
+            joystick.doSend("getState");
+            let state = joystick.getState(); //await getPosition();
             if (state == 4 || state == 5 || state == 6)
                 player.mtxLocal.translateY(1 * deltaTime);
             if (state == 8 || state == 10 || state == 9)
@@ -397,85 +401,96 @@ var Script;
     Script.getPosition = getPosition;
     //--------------------------------------------------------------//
     async function holdConnection() {
-        const response = await fetch('http://192.168.2.211:90', {
+        const response = await fetch('//192.168.2.209:90', {
             method: 'GET',
             headers: {
                 Accept: 'application/json',
             },
         });
-        return response;
+        if (!response.ok) {
+            throw new Error(`Error! status: ${response.status}`);
+        }
+        const result = (await response.json());
+        //console.log('result is: ', JSON.stringify(result, null, 4));
+        let stringified = JSON.stringify(result);
+        let parsed = JSON.parse(stringified);
+        //console.log("value: ");
+        //console.log(parsed.buttonPressed);
+        return parsed.value;
     }
 })(Script || (Script = {}));
 var Script;
 (function (Script) {
-    let state = 0;
-    let url = "";
-    //let connectedtoWS: boolean = false;
-    let websocket;
-    console.log("Trying to open a WebSocket connection...");
-    //connectToWS(url);
-    function connecting(_url) {
-        try {
-            connectToWS(_url);
-            return true;
+    class WebSocketClient {
+        //let connectedtoWS: boolean = false;
+        constructor(_url) {
+            this.state = 0;
+            this.url = _url;
+            console.log("Trying to open a WebSocket connection...");
+            this.connected = false;
+            //this.connecting(this.url);
         }
-        catch {
-            return false;
+        connecting() {
+            try {
+                this.connectToWS(this.url);
+                return true;
+            }
+            catch {
+                return false;
+            }
+        }
+        connectToWS(_url) {
+            this.url = _url;
+            this.websocket = new WebSocket(_url);
+            this.websocket.onopen = (evt) => {
+                this.onOpen(evt);
+            };
+            this.websocket.onclose = (evt) => {
+                this.onClose(evt);
+            };
+            this.websocket.onmessage = (evt) => {
+                this.onMessage(evt);
+            };
+            this.websocket.onerror = (evt) => {
+                this.onError(evt);
+            };
+        }
+        onOpen(event) {
+            console.log("Connected.");
+            this.connected = true;
+            //connected = true;
+        }
+        onClose(event) {
+            console.log("Disconnected.");
+            // connected = false;
+            setTimeout(function () {
+                this.connectToWS(this.url);
+            }, 1000);
+        }
+        onMessage(event) {
+            //console.log("Received: " + event.data);
+            /*switch (event.data) {
+                case "0":
+                    console.log(event.data);
+                    break;
+                case "1":
+                    console.log(event.data);
+                    break;
+                default:
+                    break;
+            }*/
+            this.state = event.data;
+        }
+        onError(event) {
+            console.log("Error: " + event.data);
+        }
+        doSend(_message) {
+            this.websocket.send(_message);
+        }
+        getState() {
+            return this.state;
         }
     }
-    Script.connecting = connecting;
-    function connectToWS(_url) {
-        url = _url;
-        websocket = new WebSocket(_url);
-        websocket.onopen = function (evt) {
-            onOpen(evt);
-        };
-        websocket.onclose = function (evt) {
-            onClose(evt);
-        };
-        websocket.onmessage = function (evt) {
-            onMessage(evt);
-        };
-        websocket.onerror = function (evt) {
-            onError(evt);
-        };
-    }
-    Script.connectToWS = connectToWS;
-    function onOpen(event) {
-        console.log("Connected.");
-        //connected = true;
-    }
-    function onClose(event) {
-        console.log("Disconnected.");
-        // connected = false;
-        setTimeout(function () {
-            connectToWS(url);
-        }, 2000);
-    }
-    function onMessage(event) {
-        //console.log("Received: " + event.data);
-        /*switch (event.data) {
-            case "0":
-                console.log(event.data);
-                break;
-            case "1":
-                console.log(event.data);
-                break;
-            default:
-                break;
-        }*/
-        state = event.data;
-    }
-    function onError(event) {
-        console.log("Error: " + event.data);
-    }
-    function doSend(_message) {
-        websocket.send(_message);
-    }
-    Script.doSend = doSend;
-    function getState() {
-        return state;
-    }
-    Script.getState = getState;
+    Script.WebSocketClient = WebSocketClient;
 })(Script || (Script = {}));
 //# sourceMappingURL=Script.js.map

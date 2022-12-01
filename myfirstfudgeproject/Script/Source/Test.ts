@@ -18,12 +18,24 @@ namespace Script {
     //--------------------------------------------------------------//
 
     async function holdConnection() {
-        const response = await fetch('http://192.168.2.211:90', {
+        const response = await fetch('//192.168.2.209:90', {
             method: 'GET',
             headers: {
             Accept: 'application/json',
             },
         });
-        return response;
+        
+        if (!response.ok) {
+            throw new Error(`Error! status: ${response.status}`);
+        }
+
+        const result = (await response.json());
+
+        //console.log('result is: ', JSON.stringify(result, null, 4));
+        let stringified = JSON.stringify(result);
+        let parsed = JSON.parse(stringified);
+        //console.log("value: ");
+        //console.log(parsed.buttonPressed);
+        return parsed.value;
     }
 }
