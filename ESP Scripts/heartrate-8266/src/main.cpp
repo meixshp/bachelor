@@ -14,7 +14,7 @@ const int PulseSensorHRWire = 0;        //A0; //--> PulseSensor connected to ANA
 int LED13 = 2;    
 
 //int Threshold = 550;                  // Determine which Signal to "count as a beat", and which to ingore.
-int Threshold = 450;                    //--> Determine which Signal to "count as a beat" and which to ignore.
+int Threshold = 550;                    //--> Determine which Signal to "count as a beat" and which to ignore.
 int cntHB = 0;                          //--> Variable for counting the number of heartbeats.
 boolean ThresholdStat = true;           //--> Variable for triggers in calculating heartbeats.
 int BPMval = 0;                         //--> Variable to hold the result of heartbeats calculation.
@@ -32,13 +32,13 @@ void GetHeartRate() {
 
     int PulseSensorHRVal = analogRead(PulseSensorHRWire);
 
-    if (PulseSensorHRVal > Threshold && ThresholdStat == true) {
+    if (PulseSensorHRVal < Threshold && ThresholdStat == true) {
       cntHB++;
       ThresholdStat = false;
       digitalWrite(LED13,LOW);
     }
 
-    if (PulseSensorHRVal < Threshold) {
+    if (PulseSensorHRVal > Threshold) {
       ThresholdStat = true;
       digitalWrite(LED13,HIGH);
     }
@@ -62,17 +62,17 @@ void GetHeartRate() {
 void setup() {
     pinMode(LED13,OUTPUT);         // pin that will blink to your heartbeat!
     Serial.begin(9600);         // Set's up Serial Communication at certain speed.
-    // Serial.begin(115200);
+    //Serial.begin(115200);
 }
 
 
 void loop() {
 /*
-    Signal = analogRead(PulseSensorPurplePin);  // Read the PulseSensor's value.
+    BPMval = analogRead(PulseSensorHRWire);  // Read the PulseSensor's value.
     // Assign this value to the "Signal" variable.
-    Serial.println(Signal);                    // Send the Signal value to Serial Plotter.
+    Serial.println(BPMval);                    // Send the Signal value to Serial Plotter.
 
-    if(Signal > Threshold){                    
+    if(BPMval < Threshold){                    
         digitalWrite(LED13,LOW);
     } else {
         digitalWrite(LED13,HIGH);      
@@ -81,4 +81,5 @@ void loop() {
     delay(10);
 */
     GetHeartRate();
+
 }

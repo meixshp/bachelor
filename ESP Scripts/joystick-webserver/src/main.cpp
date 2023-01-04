@@ -2,9 +2,12 @@
 #include <WebSocketsServer.h>
 #include <ESPAsyncWebServer.h>
 
-const char* ssid = "Uschi Glas 123";  // Enter SSID here
-const char* password = "78114472401919641055";  //Enter Password here
-const char* sensorName = "MaysZimmer";
+//const char* ssid = "Uschi Glas 123";              // fuwa zuhause
+//const char* password = "78114472401919641055";  
+//const char* ssid = "FRITZ!Box 7412";              // spiellabor
+//const char* password = "94639519706248825595";
+const char* ssid = "WLAN-172715";                   // mom zuhause
+const char* password = "78702967250420176341";
 
 AsyncWebServer server(90);
 WebSocketsServer webSocket = WebSocketsServer(1338);
@@ -27,9 +30,13 @@ char msg_buf[10];
 int xValue = 0 ; // To store value of the X axis
 int yValue = 0 ; // To store value of the Y axis
 int command = COMMAND_NO;
+int tempCommand = 0;
+bool trackingStart = false;
+uint8_t clientnum;
 
 void onWebSocketEvent(uint8_t client_num, WStype_t type, uint8_t * payload, size_t length) {
 
+    clientnum = client_num;
     // figuring out which ws event is occuring
     switch(type) { 
         case WStype_DISCONNECTED:
@@ -50,6 +57,7 @@ void onWebSocketEvent(uint8_t client_num, WStype_t type, uint8_t * payload, size
                 sprintf(msg_buf, "%d", command);
                 Serial.printf("Sending to [%u]: %s\n", client_num, msg_buf);
                 webSocket.sendTXT(client_num, msg_buf);
+                trackingStart = true;
             } else {
                 Serial.println("[%u] Message not recognized");
             }
@@ -63,6 +71,15 @@ void onWebSocketEvent(uint8_t client_num, WStype_t type, uint8_t * payload, size
         case WStype_FRAGMENT_FIN:
         default:
             break;
+    }
+}
+
+void trackCommand() {
+    if (tempCommand != command) {
+        sprintf(msg_buf, "%d", command);
+        Serial.printf("Sending to [%u]: %s\n", clientnum, msg_buf);
+        webSocket.sendTXT(clientnum, msg_buf);
+        tempCommand = command;
     }
 }
 
@@ -90,41 +107,23 @@ void loop() {
     // read analog X and Y analog values
     xValue = analogRead(VRX_PIN);
     yValue = analogRead(VRY_PIN);
-
+   
+    if (trackingStart)
+        trackCommand();    
+    
     // converts the analog value to commands
-    // reset commands
+    // resetting commands 
     command = COMMAND_NO;
 
-    // check left/right commands
+    // check left and right commands
     if (xValue < LEFT_THRESHOLD)
         command = command | COMMAND_LEFT;
     else if (xValue > RIGHT_THRESHOLD)
         command = command | COMMAND_RIGHT;
 
-    // check up/down commands
+    // check up and down commands
     if (yValue < UP_THRESHOLD)
         command = command | COMMAND_UP;
     else if (yValue > DOWN_THRESHOLD)
         command = command | COMMAND_DOWN;
-
-    // print command to serial and process command
-    if (command & COMMAND_LEFT) {
-        Serial.println("COMMAND LEFT");
-        // TODO: add your task here
-    }
-
-    if (command & COMMAND_RIGHT) {
-        Serial.println("COMMAND RIGHT");
-        // TODO: add your task here
-    }
-
-    if (command & COMMAND_UP) {
-        Serial.println("COMMAND UP");
-        // TODO: add your task here
-    }
-
-    if (command & COMMAND_DOWN) {
-        Serial.println("COMMAND DOWN");
-        // TODO: add your task here
-    }
 }
