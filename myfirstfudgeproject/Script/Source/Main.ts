@@ -8,11 +8,9 @@ namespace Script {
     let player: ƒ.Node;
     let lightRadius: ƒ.Node
     let avatar: ƒAid.NodeSprite;
-    let joystickURL = "ws://192.168.2.209:1338/";
-    let connectedToWS: boolean;
+    let joystickURL = "ws://192.168.2.142:1338";    // "ws://192.168.178.134:1338/";
     let grid: ƒ.Node;
     let graph: ƒ.Node;
-    let positionPlayer: ƒ.Vector3;
     let tempPosition: ƒ.Vector3;
     let sprite: ƒAid.NodeSprite;
     let flower: ƒ.Node;
@@ -22,7 +20,6 @@ namespace Script {
     let grass: ƒ.Node;
     let walls: ƒ.Node;
     let tombstones: ƒ.Node;
-    let flowers: ƒ.Node;
     let pulse: number; 
     let joystick: WebSocketClient;
 
@@ -54,7 +51,10 @@ namespace Script {
         joystick = new WebSocketClient(joystickURL);
         joystick.connecting();
 
-        connectedToWS = joystick.connected; 
+        // joystick.websocket.addEventListener("message",  (evt) => {
+        //     console.log(evt);
+        // });
+
         //connecting(joystickURL);
         //connectToWS(joystickURL);
         player = graph.getChildrenByName("Player")[0];
@@ -85,7 +85,6 @@ namespace Script {
         //changeLightRadius();
 
         if (joystick.connected) {
-            joystick.doSend("getState");
             let state = joystick.getState(); //await getPosition();
 
             if (state == 4 || state == 5 || state == 6) player.mtxLocal.translateY(1 * deltaTime);

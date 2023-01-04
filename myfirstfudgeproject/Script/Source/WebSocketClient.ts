@@ -5,12 +5,10 @@ namespace Script {
         public url: string;
         public connected: boolean;
         
-        //let connectedtoWS: boolean = false;
         constructor(_url: string) {
             this.url = _url;
             console.log("Trying to open a WebSocket connection...");
             this.connected = false;
-            //this.connecting(this.url);
         }
 
         public connecting(): boolean {
@@ -25,36 +23,48 @@ namespace Script {
         public connectToWS(_url: string) {
             this.url = _url;
             this.websocket = new WebSocket(_url);
-            this.websocket.onopen = (evt) => {
+            // this.websocket.onopen = (evt) => {
+            //     this.onOpen(evt);
+            // };
+            // this.websocket.onclose = (evt) => {
+            //     this.onClose(evt);
+            // };
+            // this.websocket.onmessage = (evt) => {
+            //     this.onMessage(evt);
+            // };
+            // this.websocket.onerror = (evt) => {
+            //     this.onError(evt);
+            // };
+            this.websocket.addEventListener("open",  (evt) => {
                 this.onOpen(evt);
-            };
-            this.websocket.onclose = (evt) => {
+            });
+            this.websocket.addEventListener("close",  (evt) => {
                 this.onClose(evt);
-            };
-            this.websocket.onmessage = (evt) => {
+            });
+            this.websocket.addEventListener("message",  (evt) => {
                 this.onMessage(evt);
-            };
-            this.websocket.onerror = (evt) => {
+            });
+            this.websocket.addEventListener("error",  (evt) => {
                 this.onError(evt);
-            };
+            });
         }
 
         public onOpen(event: any) {
             console.log("Connected.");
             this.connected = true;
-            //connected = true;
+            this.doSend("getState");
         }
 
         public onClose(event: any) {
             console.log("Disconnected.");
-            // connected = false;
+            this.connected = false;
             setTimeout(function () {
                 this.connectToWS(this.url);
             }, 1000);
         }
 
         public onMessage(event: any) {
-            //console.log("Received: " + event.data);
+            console.log("Received: " + event.data);
 
             /*switch (event.data) {
                 case "0":
@@ -67,6 +77,9 @@ namespace Script {
                     break;
             }*/
             this.state = event.data;
+
+            // save last value and keep repeating action 
+            // check if sent data has changed -- if yes, do something else
         }
 
         public onError(event: any) {

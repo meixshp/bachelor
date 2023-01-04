@@ -4,36 +4,36 @@ var Script;
     var ƒ = FudgeCore;
     ƒ.Project.registerScriptNamespace(Script); // Register the namespace to FUDGE for serialization
     class CubeComponentScript extends ƒ.ComponentScript {
+        // Register the script as component for use in the editor via drag&drop
+        static iSubclass = ƒ.Component.registerSubclass(CubeComponentScript);
+        // Properties may be mutated by users in the editor via the automatically created user interface
+        message = "CubeComponentScript added to ";
         constructor() {
             super();
-            // Properties may be mutated by users in the editor via the automatically created user interface
-            this.message = "CubeComponentScript added to ";
-            // Activate the functions of this component as response to events
-            this.hndEvent = (_event) => {
-                switch (_event.type) {
-                    case "componentAdd" /* COMPONENT_ADD */:
-                        ƒ.Debug.log(this.message, this.node);
-                        break;
-                    case "componentRemove" /* COMPONENT_REMOVE */:
-                        this.removeEventListener("componentAdd" /* COMPONENT_ADD */, this.hndEvent);
-                        this.removeEventListener("componentRemove" /* COMPONENT_REMOVE */, this.hndEvent);
-                        break;
-                    case "nodeDeserialized" /* NODE_DESERIALIZED */:
-                        // if deserialized the node is now fully reconstructed and access to all its components and children is possible
-                        break;
-                }
-            };
             // Don't start when running in editor
             if (ƒ.Project.mode == ƒ.MODE.EDITOR)
                 return;
             // Listen to this component being added to or removed from a node
-            this.addEventListener("componentAdd" /* COMPONENT_ADD */, this.hndEvent);
-            this.addEventListener("componentRemove" /* COMPONENT_REMOVE */, this.hndEvent);
-            this.addEventListener("nodeDeserialized" /* NODE_DESERIALIZED */, this.hndEvent);
+            this.addEventListener("componentAdd" /* ƒ.EVENT.COMPONENT_ADD */, this.hndEvent);
+            this.addEventListener("componentRemove" /* ƒ.EVENT.COMPONENT_REMOVE */, this.hndEvent);
+            this.addEventListener("nodeDeserialized" /* ƒ.EVENT.NODE_DESERIALIZED */, this.hndEvent);
         }
+        // Activate the functions of this component as response to events
+        hndEvent = (_event) => {
+            switch (_event.type) {
+                case "componentAdd" /* ƒ.EVENT.COMPONENT_ADD */:
+                    ƒ.Debug.log(this.message, this.node);
+                    break;
+                case "componentRemove" /* ƒ.EVENT.COMPONENT_REMOVE */:
+                    this.removeEventListener("componentAdd" /* ƒ.EVENT.COMPONENT_ADD */, this.hndEvent);
+                    this.removeEventListener("componentRemove" /* ƒ.EVENT.COMPONENT_REMOVE */, this.hndEvent);
+                    break;
+                case "nodeDeserialized" /* ƒ.EVENT.NODE_DESERIALIZED */:
+                    // if deserialized the node is now fully reconstructed and access to all its components and children is possible
+                    break;
+            }
+        };
     }
-    // Register the script as component for use in the editor via drag&drop
-    CubeComponentScript.iSubclass = ƒ.Component.registerSubclass(CubeComponentScript);
     Script.CubeComponentScript = CubeComponentScript;
 })(Script || (Script = {}));
 var Script;
@@ -41,36 +41,36 @@ var Script;
     var ƒ = FudgeCore;
     ƒ.Project.registerScriptNamespace(Script); // Register the namespace to FUDGE for serialization
     class CustomComponentScript extends ƒ.ComponentScript {
+        // Register the script as component for use in the editor via drag&drop
+        static iSubclass = ƒ.Component.registerSubclass(CustomComponentScript);
+        // Properties may be mutated by users in the editor via the automatically created user interface
+        message = "CustomComponentScript added to ";
         constructor() {
             super();
-            // Properties may be mutated by users in the editor via the automatically created user interface
-            this.message = "CustomComponentScript added to ";
-            // Activate the functions of this component as response to events
-            this.hndEvent = (_event) => {
-                switch (_event.type) {
-                    case "componentAdd" /* COMPONENT_ADD */:
-                        ƒ.Debug.log(this.message, this.node);
-                        break;
-                    case "componentRemove" /* COMPONENT_REMOVE */:
-                        this.removeEventListener("componentAdd" /* COMPONENT_ADD */, this.hndEvent);
-                        this.removeEventListener("componentRemove" /* COMPONENT_REMOVE */, this.hndEvent);
-                        break;
-                    case "nodeDeserialized" /* NODE_DESERIALIZED */:
-                        // if deserialized the node is now fully reconstructed and access to all its components and children is possible
-                        break;
-                }
-            };
             // Don't start when running in editor
             if (ƒ.Project.mode == ƒ.MODE.EDITOR)
                 return;
             // Listen to this component being added to or removed from a node
-            this.addEventListener("componentAdd" /* COMPONENT_ADD */, this.hndEvent);
-            this.addEventListener("componentRemove" /* COMPONENT_REMOVE */, this.hndEvent);
-            this.addEventListener("nodeDeserialized" /* NODE_DESERIALIZED */, this.hndEvent);
+            this.addEventListener("componentAdd" /* ƒ.EVENT.COMPONENT_ADD */, this.hndEvent);
+            this.addEventListener("componentRemove" /* ƒ.EVENT.COMPONENT_REMOVE */, this.hndEvent);
+            this.addEventListener("nodeDeserialized" /* ƒ.EVENT.NODE_DESERIALIZED */, this.hndEvent);
         }
+        // Activate the functions of this component as response to events
+        hndEvent = (_event) => {
+            switch (_event.type) {
+                case "componentAdd" /* ƒ.EVENT.COMPONENT_ADD */:
+                    ƒ.Debug.log(this.message, this.node);
+                    break;
+                case "componentRemove" /* ƒ.EVENT.COMPONENT_REMOVE */:
+                    this.removeEventListener("componentAdd" /* ƒ.EVENT.COMPONENT_ADD */, this.hndEvent);
+                    this.removeEventListener("componentRemove" /* ƒ.EVENT.COMPONENT_REMOVE */, this.hndEvent);
+                    break;
+                case "nodeDeserialized" /* ƒ.EVENT.NODE_DESERIALIZED */:
+                    // if deserialized the node is now fully reconstructed and access to all its components and children is possible
+                    break;
+            }
+        };
     }
-    // Register the script as component for use in the editor via drag&drop
-    CustomComponentScript.iSubclass = ƒ.Component.registerSubclass(CustomComponentScript);
     Script.CustomComponentScript = CustomComponentScript;
 })(Script || (Script = {}));
 var Script;
@@ -82,11 +82,9 @@ var Script;
     let player;
     let lightRadius;
     let avatar;
-    let joystickURL = "ws://192.168.2.209:1338/";
-    let connectedToWS;
+    let joystickURL = "ws://192.168.2.142:1338"; // "ws://192.168.178.134:1338/";
     let grid;
     let graph;
-    let positionPlayer;
     let tempPosition;
     let sprite;
     let flower;
@@ -96,7 +94,6 @@ var Script;
     let grass;
     let walls;
     let tombstones;
-    let flowers;
     let pulse;
     let joystick;
     Script.root = new ƒ.Node("Root");
@@ -121,7 +118,9 @@ var Script;
         viewport.initialize("Viewport", graph, cmpCamera, canvas);
         joystick = new Script.WebSocketClient(joystickURL);
         joystick.connecting();
-        connectedToWS = joystick.connected;
+        // joystick.websocket.addEventListener("message",  (evt) => {
+        //     console.log(evt);
+        // });
         //connecting(joystickURL);
         //connectToWS(joystickURL);
         player = graph.getChildrenByName("Player")[0];
@@ -135,7 +134,7 @@ var Script;
         await handleSprites();
         //document.querySelector("#speechbox").setAttribute("style","visibility:visible");
         //document.getElementById("speechbox").innerHTML = "Game over!";
-        ƒ.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, update);
+        ƒ.Loop.addEventListener("loopFrame" /* ƒ.EVENT.LOOP_FRAME */, update);
         ƒ.Loop.start();
     }
     async function update(_event) {
@@ -146,7 +145,6 @@ var Script;
         //console.log(await getPosition());
         //changeLightRadius();
         if (joystick.connected) {
-            joystick.doSend("getState");
             let state = joystick.getState(); //await getPosition();
             if (state == 4 || state == 5 || state == 6)
                 player.mtxLocal.translateY(1 * deltaTime);
@@ -281,7 +279,6 @@ var Script;
     Script.animations = {};
     let spriteTombstone;
     let spriteFlower;
-    let spriteLight;
     let material;
     async function loadSprites() {
         let imgSpriteSheetGrass = new ƒ.TextureImage();
@@ -290,9 +287,6 @@ var Script;
         let imgSpriteSheetWall = new ƒ.TextureImage();
         await imgSpriteSheetWall.load("Images/wall3.png");
         let spriteSheetWall = new ƒ.CoatTextured(undefined, imgSpriteSheetWall);
-        // let imgSpriteSheetLight: ƒ.TextureImage = new ƒ.TextureImage();
-        // await imgSpriteSheetLight.load("Images/light_radius.png");
-        // let spriteSheetLight: ƒ.CoatTextured = new ƒ.CoatTextured(undefined, imgSpriteSheetLight);
         generateSprites(spriteSheet, spriteSheetWall);
     }
     Script.loadSprites = loadSprites;
@@ -306,17 +300,13 @@ var Script;
         // Flower ------------------------
         const flower = new ƒAid.SpriteSheetAnimation("flower", _spritesheet);
         flower.generateByGrid(ƒ.Rectangle.GET(32, 192, 16, 16), 1, 16, ƒ.ORIGIN2D.CENTER, ƒ.Vector2.X(16));
-        // Flower ------------------------
+        // Wall ------------------------
         const wall = new ƒAid.SpriteSheetAnimation("wall", _spritesheetWall);
         wall.generateByGrid(ƒ.Rectangle.GET(0, 0, 250, 250), 1, 250, ƒ.ORIGIN2D.CENTER, ƒ.Vector2.X(250));
-        // Light ------------------------
-        // const light: ƒAid.SpriteSheetAnimation = new ƒAid.SpriteSheetAnimation("light", _spritesheetLight);
-        // light.generateByGrid(ƒ.Rectangle.GET(0, 0, 3508, 2480), 1, 2480, ƒ.ORIGIN2D.CENTER, ƒ.Vector2.X(3508));
         Script.animations["grass"] = grass;
         Script.animations["wall"] = wall;
         Script.animations["tombstone"] = stone;
         Script.animations["flower"] = flower;
-        // animations["light"] = light;
     }
     async function setGrassMaterial(_node) {
         let textureImage = new ƒ.TextureImage();
@@ -348,7 +338,6 @@ var Script;
         spriteTombstone.mtxLocal.translateZ(0.0001);
         spriteTombstone.framerate = 1;
         _node.addChild(spriteTombstone);
-        //_node.getComponent(ƒ.ComponentMaterial).clrPrimary = new ƒ.Color(0, 0, 0, 0);
     }
     Script.setSpriteTombstone = setSpriteTombstone;
     function setSpriteFlower(_node) {
@@ -359,7 +348,6 @@ var Script;
         spriteFlower.mtxLocal.translateZ(0.0001);
         spriteFlower.framerate = 1;
         _node.addChild(spriteFlower);
-        //_node.getComponent(ƒ.ComponentMaterial).clrPrimary = new ƒ.Color(0, 0, 0, 0);
     }
     Script.setSpriteFlower = setSpriteFlower;
     async function addLightRadius(_node) {
@@ -371,13 +359,6 @@ var Script;
         let cmpMaterial = new ƒ.ComponentMaterial(material);
         _node.addComponent(cmpMaterial);
         cmpMaterial.mtxPivot.scale(new ƒ.Vector2(1, 1));
-        // spriteLight = new ƒAid.NodeSprite("SpriteLight");
-        // spriteLight.addComponent(new ƒ.ComponentTransform(new ƒ.Matrix4x4()));
-        // spriteLight.setAnimation(<ƒAid.SpriteSheetAnimation>animations["light"]);
-        // spriteLight.setFrameDirection(1);
-        // spriteLight.mtxLocal.translateZ(0.0001);
-        // spriteLight.framerate = 1;
-        // _node.addChild(spriteLight);
     }
     Script.addLightRadius = addLightRadius;
 })(Script || (Script = {}));
@@ -422,13 +403,14 @@ var Script;
 var Script;
 (function (Script) {
     class WebSocketClient {
-        //let connectedtoWS: boolean = false;
+        state = 0;
+        websocket;
+        url;
+        connected;
         constructor(_url) {
-            this.state = 0;
             this.url = _url;
             console.log("Trying to open a WebSocket connection...");
             this.connected = false;
-            //this.connecting(this.url);
         }
         connecting() {
             try {
@@ -442,33 +424,45 @@ var Script;
         connectToWS(_url) {
             this.url = _url;
             this.websocket = new WebSocket(_url);
-            this.websocket.onopen = (evt) => {
+            // this.websocket.onopen = (evt) => {
+            //     this.onOpen(evt);
+            // };
+            // this.websocket.onclose = (evt) => {
+            //     this.onClose(evt);
+            // };
+            // this.websocket.onmessage = (evt) => {
+            //     this.onMessage(evt);
+            // };
+            // this.websocket.onerror = (evt) => {
+            //     this.onError(evt);
+            // };
+            this.websocket.addEventListener("open", (evt) => {
                 this.onOpen(evt);
-            };
-            this.websocket.onclose = (evt) => {
+            });
+            this.websocket.addEventListener("close", (evt) => {
                 this.onClose(evt);
-            };
-            this.websocket.onmessage = (evt) => {
+            });
+            this.websocket.addEventListener("message", (evt) => {
                 this.onMessage(evt);
-            };
-            this.websocket.onerror = (evt) => {
+            });
+            this.websocket.addEventListener("error", (evt) => {
                 this.onError(evt);
-            };
+            });
         }
         onOpen(event) {
             console.log("Connected.");
             this.connected = true;
-            //connected = true;
+            this.doSend("getState");
         }
         onClose(event) {
             console.log("Disconnected.");
-            // connected = false;
+            this.connected = false;
             setTimeout(function () {
                 this.connectToWS(this.url);
             }, 1000);
         }
         onMessage(event) {
-            //console.log("Received: " + event.data);
+            console.log("Received: " + event.data);
             /*switch (event.data) {
                 case "0":
                     console.log(event.data);
@@ -480,6 +474,8 @@ var Script;
                     break;
             }*/
             this.state = event.data;
+            // save last value and keep repeating action 
+            // check if sent data has changed -- if yes, do something else
         }
         onError(event) {
             console.log("Error: " + event.data);
